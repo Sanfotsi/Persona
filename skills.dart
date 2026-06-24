@@ -2,7 +2,6 @@ const light = {
     "Power": 40,
     "Accuracy": 98,
     "Cost": 4,
-    "Type": "Magic"
 };
 
 const medium = {
@@ -23,27 +22,34 @@ const severe = {
     "Cost": 48
 };
 
-const attribute = {
+const magical = {
   "Agi": light,
   "Bufu": light,
   "Zio": light,
-  "Garu": light,
-  "Bash": {
+  "Garu": light
+};
+
+const physical = {
+    "Bash": {
     "Power": 60,
     "Accuracy": 100,
     "Cost": 6,
-    "Type": "Physical"
   },
   "Cleave": {
     "Power": 65,
     "Accuracy": 100,
     "Cost": 5,
-    "Type": "Physical"
   },
   "Skewer": {
     "Power": 70,
     "Accuracy": 85,
     "Cost": 5,
-    "Type": "Physical"
-  },
+  }
+};
+
+const healing = {
+  "Dia": {
+    "Power": 40,
+    "Cost": 3
+  }
 };
