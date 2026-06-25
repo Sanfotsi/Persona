@@ -58,63 +58,83 @@ void main(){
     Persona Chie = Persona('Tomoe', 100, 100, ['Skewer']);
     Persona Yukiko = Persona('Konohana Sakuya', 100, 100, ['Dia', 'Agi']);
 
-    List characters = [Yu, Yosuke, Chie, Yukiko];
+    Map<String, Persona> characters = {
+        'Yu': Yu,
+        'Yosuke': Yosuke,
+        'Chie': Chie,
+        'Yukiko': Yukiko 
+    };
 
-    Persona opponent = Persona('Magatsu-Izanagi', 1000, 1000, ['Zio', 'Garu']);
+    Persona opponent1 = Persona('Magatsu-Izanagi', 100, 1000, ['Zio', 'Cleave', 'Dia']);
+    Persona opponent2 = Persona('Magatsu-Izanagi', 100, 1000, ['Garu', 'Bash', 'Dia']);
+    Persona opponent3 = Persona('Magatsu-Izanagi', 100, 1000, ['Bufu', 'Skewer', 'Dia']);
 
-    while (Yu.hp > 0 && opponent.hp > 0){
-      for (var i in characters){
-        stdout.write('${i.name}: ');
-        String move = stdin.readLineSync()!;
-        switch (move){
-            case 'Magic':
-                stdout.write('Skill: ');
-                String choice = stdin.readLineSync()!;
-                while (!i.skills.contains(choice)){
-                  stdout.write('Skill: ');
-                  choice = stdin.readLineSync()!;
-                };
-                i.magic(opponent, choice);
-            case 'Physique':
-                stdout.write('Skill: ');
-                String choice = stdin.readLineSync()!;
-                while (!i.skills.contains(choice)){
-                  stdout.write('Skill: ');
-                  choice = stdin.readLineSync()!;
-                };
-                i.physique(opponent, choice);
-            case 'Heal':
-                stdout.write('Target: ');
-                String char = stdin.readLineSync()!;
-                late Persona target;
+    Map<String, Persona> opponents = {
+        'opponent1': opponent1,
+        'opponent2': opponent2,
+        'opponent3': opponent3
+    };
 
-                switch (char){
-                  case 'Yu':
-                    target = Yu;
-                  case 'Yosuke':
-                    target = Yosuke;
-                  case 'Chie':
-                    target = Chie;
-                  case 'Yukiko':
-                    target = Yukiko;
-                }
-
-                i.heal(target, 'Dia');
+    while (Yu.hp > 0 && opponents.values.any((opponent) => opponent.hp > 0)){
+        for (var i in characters.values){
+            stdout.write('${i.name}: ');
+            String move = stdin.readLineSync()!;
+            switch (move){
+                case 'Magic':
+                    stdout.write('Skill: ');
+                    String choice = stdin.readLineSync()!;
+                    while (!i.skills.contains(choice)){
+                        stdout.write('Skill: ');
+                        choice = stdin.readLineSync()!;
+                    };
+                    stdout.write('Target: ');
+                    String target = stdin.readLineSync()!;
+                    while (!opponents.keys.contains(target)){
+                        stdout.write('Target: ');
+                        target = stdin.readLineSync()!;
+                    };
+                    i.magic(opponents[target]!, choice);
+                case 'Physique':
+                    stdout.write('Skill: ');
+                    String choice = stdin.readLineSync()!;
+                    while (!i.skills.contains(choice)){
+                        stdout.write('Skill: ');
+                        choice = stdin.readLineSync()!;
+                    };
+                    stdout.write('Target: ');
+                    String target = stdin.readLineSync()!;
+                    while (!opponents.keys.contains(target)){
+                        stdout.write('Target: ');
+                        target = stdin.readLineSync()!;
+                    };
+                    i.physique(opponents[target]!, choice);
+                case 'Heal':
+                    stdout.write('Target: ');
+                    String target = stdin.readLineSync()!;
+                    while (!characters.keys.contains(target)){
+                        stdout.write('Target: ');
+                        target = stdin.readLineSync()!;
+                    };
+                    i.heal(characters[target]!, 'Dia');
+            }
         }
-      }
-
-        switch (Random().nextInt(3)){
-            case 0:
-                opponent.magic(characters[Random().nextInt(characters.length)], opponent.skills[Random().nextInt((opponent.skills.length))]);
-            case 1:
-                opponent.physique(characters[Random().nextInt(characters.length)], opponent.skills[Random().nextInt((opponent.skills.length))]);
-            case 2:
-                opponent.heal(opponent, 'Dia');
+        for (var i in opponents.values){
+            switch (Random().nextInt(3)){
+                case 0:
+                    i.magic(characters[characters.keys.toList()[Random().nextInt(characters.keys.length)]]!, 'Garu');
+                case 1:
+                    i.physique(characters[characters.keys.toList()[Random().nextInt(characters.keys.length)]]!, 'Bash');
+                case 2:
+                    i.heal(opponents[opponents.keys.toList()[Random().nextInt(opponents.keys.length)]]!, 'Dia');
+            }
         }
 
-        for (var i in characters){
+        for (var i in characters.values){
           print(i.info());
         }
-        print(opponent.info());
+
+        for (var i in opponents.values){
+          print(i.info());
+        }
     }
 }
