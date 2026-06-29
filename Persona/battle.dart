@@ -4,11 +4,13 @@ import 'skills.dart';
 
 class Persona{
   String name;
+  int maxHp;
+  int maxSp;
   int hp;
   int sp;
   List<String> skills;
 
-  Persona(this.name, this.hp, this.sp, this.skills);
+  Persona(this.name, this.hp, this.sp, this.skills) : maxHp = hp, maxSp = sp;
 
   void skill(Persona target, String skill){
     int power = effect[skill]!['Power'] as int;
@@ -28,17 +30,17 @@ class Persona{
           break;
         case 2:
           sp = max(0, sp - cost);
-          target.hp = min(100, target.hp + power);
+          target.hp = min(target.maxHp, target.hp + power);
           break;
         }
-        print('${this.name} casted ${skill} on ${target.name}');
+        print('$name casted $skill on ${target.name}');
       } else {
-        print('${this.name} casted ${skill} on ${target.name}, but it missed!');
+        print('$name casted $skill on ${target.name}, but it missed!');
       }
   }
 
   String info(){
-    return ('Name: ${this.name}\nHP: ${this.hp.toString()}\nSP: ${this.sp.toString()}\nSkills: ${this.skills}');
+    return ('Name: $name\nHP: $hp/$maxHp\nSP: $sp/$maxSp\nSkills: $skills');
   }
 }
 
@@ -56,55 +58,74 @@ void main(){
     '3': Persona('Shadow Konohana Sakuya', 100, 100, ['Agi', 'Cleave']),
   };
 
-  while (characters['Yu']!.hp > 0 || opponents.isNotEmpty){
+  game:
+  while (true){
     for (var i in characters.values){
+      if (i.hp == 0){
+        continue;
+      }
+
       print(i.info());
+
       stdout.write('Skill: ');
       String move = stdin.readLineSync()!;
       while (!i.skills.contains(move)){
           stdout.write('Skill: ');
           move = stdin.readLineSync()!;
       };
+
       stdout.write('Target: ');
       String target = stdin.readLineSync()!;
+      Map<String, Persona> possible = {};
       switch (effect[move]!['Type']){
         case 2:
-          while (!characters.keys.contains(target)){
-            stdout.write('Target: ');
-            target = stdin.readLineSync()!;
-          }
-          i.skill(characters[target]!, move);
+          possible = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
+          break;
         default:
-          while (!opponents.keys.contains(target)){
-            stdout.write('Target: ');
-            target = stdin.readLineSync()!;
-          };
-          i.skill(opponents[target]!, move);
-          if (opponents[target]!.hp == 0){
-            opponents.remove(target);
-          }
-        }
+          possible = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
+          break;
+      };
+      while (!possible.keys.contains(target)){
+        stdout.write('Target: ');
+        target = stdin.readLineSync()!;
       }
+      i.skill(possible[target]!, move);
+      if (opponents.values.every((opponent) => opponent.hp == 0)){
+        break game;
+      }
+    }
+
       for (var i in opponents.values){
+        if (i.hp == 0){
+          continue;
+        }      
+
         print(i.info());
-        late Persona target;
+
+        late Map<String, Persona> target;
         late String move;
-        int random = Random().nextInt(2);
-        switch (random){
-          case 0:
-            target = characters[characters.keys.toList()[Random().nextInt(characters.keys.length)]]!;
-            move = i.skills[Random().nextInt(i.skills.length)];
-            i.skill(target, move);
-            if (target.hp == 0){
-              characters.remove(target);
-            }
+        late Persona possible;
+
+        move = i.skills[Random().nextInt(i.skills.length)];
+        
+        switch (effect[move]!['Type']){
+          case 2:
+            target = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
             break;
-          case 1:
-            target = opponents[opponents.keys.toList()[Random().nextInt(opponents.keys.length)]]!;
-            move = 'Dia';
-            i.skill(target, move);
+          default:
+            target = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
             break;
         }
+        possible = target[target.keys.toList()[Random().nextInt(target.keys.length)]]!;
+        i.skill(possible, move);
+        if (characters.values.every((character) => character.hp == 0)){
+          break game;
+        }
       }
+  }
+  if (characters['Yu']!.hp > 0) {
+    print('The Investigation Team won!');
+  } else {
+    print('The Investigation Team was defeated!');
   }
 }
