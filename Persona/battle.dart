@@ -8,6 +8,12 @@ class Persona{
   int maxSp;
   int hp;
   int sp;
+  double attack = 1;
+  double defence = 1;
+  double rate = 1;
+  int attackCooldown = 0;
+  int defenceCooldown = 0;
+  int rateCooldown = 0;
   List<String> skills;
 
   Persona(this.name, this.hp, this.sp, this.skills) : maxHp = hp, maxSp = sp;
@@ -18,19 +24,58 @@ class Persona{
     int cost = effect[skill]!['Cost'] as int;
     int type = effect[skill]!['Type'] as int;
 
-    if (Random().nextInt(100) + 1 <= accuracy){
+    attackCooldown = max(0, attackCooldown - 1);
+    defenceCooldown = max(0, defenceCooldown - 1);
+    rateCooldown = max(0, rateCooldown - 1);
+
+    if (attackCooldown == 0){
+      attack = 1;
+    }
+    if (defenceCooldown == 0){
+      defence = 1;
+    }
+    if (rateCooldown == 0){
+      rate = 1;
+    }
+
+    if (type == 1){
+      hp -= (maxHp * (cost / 100)).toInt();
+    } else {
+      sp = max(0, sp - cost);
+    }
+
+    if (Random().nextInt(100) + 1 <= min(100, accuracy*(rate/target.rate))){
       switch (type){
         case 0:
-          sp -= cost;
-          target.hp = max(0, target.hp - power);
-          break;
         case 1:
-          hp -= (hp * (cost / 100)).toInt();
-          target.hp = max(0, target.hp - power);
+          target.hp = max(0, (target.hp - (power*(attack/target.defence))).floor());
           break;
         case 2:
-          sp = max(0, sp - cost);
           target.hp = min(target.maxHp, target.hp + power);
+          break;
+        case 3:
+          target.attack = 3/2;
+          target.attackCooldown = 3;
+          break;
+        case 4:
+          target.defence = 3/2;
+          target.defenceCooldown = 3;
+          break;
+        case 5:
+          target.rate = 3/2;
+          target.rateCooldown = 3;
+          break;
+        case 6:
+          target.attack = 2/3;
+          target.attackCooldown = 3;
+          break;
+        case 7:
+          target.defence = 2/3;
+          target.defenceCooldown = 3;
+          break;
+        case 8:
+          target.rate = 2/3;
+          target.rateCooldown = 3;
           break;
         }
         print('$name casted $skill on ${target.name}');
@@ -46,10 +91,11 @@ class Persona{
 
 void main(){
   Map<String, Persona> characters = {
-    'Yu': Persona('Izanagi', 100, 100, ['Zio', 'Cleave']),
+    'Yu': Persona('Izanagi', 100, 100, ['Zio', 'Cleave', 'Rakukaja']),
     'Yosuke': Persona('Jiraiya', 100, 100, ['Garu', 'Bash', 'Dia']),
-    'Chie': Persona('Tomoe', 100, 100, ['Skewer']),
-    'Yukiko': Persona('Konohana Sakuya', 100, 100, ['Dia', 'Agi']) 
+    'Chie': Persona('Tomoe', 100, 100, ['Skewer', 'Tarukaja']),
+    'Yukiko': Persona('Konohana Sakuya', 100, 100, ['Dia', 'Agi']), // Maragi, Me Patra 
+    'Kanji': Persona('Take-Mikazuchi', 100, 100, ['Zionga', 'Rakukaja']) //Mazio, Kill Rush, Regenerate 1
   };
 
   Map<String, Persona> opponents = {
@@ -78,11 +124,18 @@ void main(){
       String target = stdin.readLineSync()!;
       Map<String, Persona> possible = {};
       switch (effect[move]!['Type']){
-        case 2:
-          possible = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
-          break;
-        default:
+        case 0:
+        case 1:
+        case 6:
+        case 7:
+        case 8:
           possible = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
+          break;
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          possible = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
           break;
       };
       while (!possible.keys.contains(target)){
@@ -90,6 +143,7 @@ void main(){
         target = stdin.readLineSync()!;
       }
       i.skill(possible[target]!, move);
+      print(possible[target]!.info());
       if (opponents.values.every((opponent) => opponent.hp == 0)){
         break game;
       }
@@ -109,20 +163,29 @@ void main(){
         move = i.skills[Random().nextInt(i.skills.length)];
         
         switch (effect[move]!['Type']){
-          case 2:
-            target = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
-            break;
-          default:
+          case 0:
+          case 1:
+          case 6:
+          case 7:
+          case 8:
             target = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
+            break;
+          case 2:
+          case 3:
+          case 4:
+          case 5:
+            target = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
             break;
         }
         possible = target[target.keys.toList()[Random().nextInt(target.keys.length)]]!;
         i.skill(possible, move);
+        print(possible.info());
         if (characters.values.every((character) => character.hp == 0)){
           break game;
         }
       }
   }
+
   if (characters['Yu']!.hp > 0) {
     print('The Investigation Team won!');
   } else {
