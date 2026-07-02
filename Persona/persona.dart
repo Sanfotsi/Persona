@@ -53,14 +53,14 @@ class Persona{
     return false;
   }
 
-  void power(Persona target, int power, int type){
+  void power(Persona target, int power, int type, int multiplier){
       switch (type){
         case 0:
         case 1:
           target.hp = max(0, (target.hp - (power*(attack/target.defence))).floor());
           break;
         case 2:
-          target.hp = min(target.maxHp, target.hp + power);
+          target.hp = min(target.maxHp, target.hp + (power*(Random().nextInt(multiplier) + 1)));
           break;
         case 3:
           target.attack = 3/2;
@@ -95,14 +95,14 @@ class Persona{
     cost(card['Cost']!, card['Type']!);
 
     if (accuracy(card['Accuracy']!, target.rate)){
-      power(target, card['Power']!, card['Type']!);
+      power(target, card['Power']!, card['Type']!, card['Multiplier']!);
       return '$name casted $skill on ${target.name}';
     }
     return '$name casted $skill on ${target.name}, but it missed!';
   }
 
   String info(){
-    return 'Name: $name, HP: $hp/$maxHp, SP: $sp/$maxSp, Attack: $attack ($attackCooldown), Defend: $defence ($defenceCooldown), Rate: $rate ($rateCooldown), Skills: $active';
+    return 'Name: $name, HP: $hp/$maxHp, SP: $sp/$maxSp, Attack: $attack ($attackCooldown), Defend: $defence ($defenceCooldown), Rate: $rate ($rateCooldown)';
   }
 }
 
@@ -111,7 +111,7 @@ Map<String, Persona> characters = {
   'Yosuke': Persona('Jiraiya', 100, 100, ['Garu', 'Bash', 'Dia'], []),
   'Chie': Persona('Tomoe', 100, 100, ['Skewer', 'Tarukaja'], []),
   'Yukiko': Persona('Konohana Sakuya', 100, 100, ['Dia', 'Agi'], []), // Maragi, Me Patra 
-  'Kanji': Persona('Take-Mikazuchi', 100, 100, ['Zionga', 'Rakukaja'], ['Regenerate 1']), // Mazio, Kill Rush
+  'Kanji': Persona('Take-Mikazuchi', 100, 100, ['Zionga', 'Rakukaja', 'Kill Rush'], ['Regenerate 1']), // Mazio
   'Teddie': Persona('Kintoki-Douji', 100, 100, ['Bufula'], []), // Mediarama, Energy Shower, Poison Skewer, Re Patra
-  'Naoto': Persona('Sukuna-Hikona', 100, 100, ['Agidyne', 'Garudyne'], []) // Tempest Slash, Mudoon, Hamaon, Megidola, Deathbound
+  'Naoto': Persona('Sukuna-Hikona', 100, 100, ['Tempest Slash', 'Agidyne', 'Garudyne', 'Mudoon', 'Hamaon'], []) // Megidola, Deathbound
 };

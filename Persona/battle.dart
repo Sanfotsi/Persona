@@ -74,51 +74,51 @@ void main(){
         };
 
       while (true){
-      for (var i in party.values){
-        if (i.hp == 0){
-          continue;
+        for (var i in party.values){
+          if (i.hp == 0){
+            continue;
+          }
+
+          i.turn();
+
+          print(i.info());
+
+          stdout.write('Skill ${i.active}: ');
+          String move = stdin.readLineSync()!;
+          while (!i.active.contains(move)){
+              stdout.write('Skill: ');
+              move = stdin.readLineSync()!;
+          };
+
+          Map<String, Persona> character = {};
+
+          switch (effect[move]!['Type']){
+            case 0:
+            case 1:
+            case 6:
+            case 7:
+            case 8:
+              character = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
+              break;
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+              character = Map.fromEntries(party.entries.where((character) => character.value.hp > 0));
+              break;
+          };
+          stdout.write('Target ${character.keys}: ');
+          String target = stdin.readLineSync()!;
+          while (!character.keys.contains(target)){
+            stdout.write('Target: ');
+            target = stdin.readLineSync()!;
+          }
+          print(i.skill(character[target]!, move));
+          print(character[target]!.info());
+          if (opponents.values.every((opponent) => opponent.hp == 0)){
+            break game;
+          }
         }
-
-        i.turn();
-
-        print(i.info());
-
-        stdout.write('Skill ${i.active}: ');
-        String move = stdin.readLineSync()!;
-        while (!i.active.contains(move)){
-            stdout.write('Skill: ');
-            move = stdin.readLineSync()!;
-        };
-
-        Map<String, Persona> character = {};
-
-        switch (effect[move]!['Type']){
-          case 0:
-          case 1:
-          case 6:
-          case 7:
-          case 8:
-            character = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
-            break;
-          case 2:
-          case 3:
-          case 4:
-          case 5:
-            character = Map.fromEntries(party.entries.where((character) => character.value.hp > 0));
-            break;
-        };
-        stdout.write('Target ${character.keys}: ');
-        String target = stdin.readLineSync()!;
-        while (!character.keys.contains(target)){
-          stdout.write('Target: ');
-          target = stdin.readLineSync()!;
-        }
-        print(i.skill(character[target]!, move));
-        print(character[target]!.info());
-        if (opponents.values.every((opponent) => opponent.hp == 0)){
-          break game;
-        }
-      }
 
         for (var i in opponents.values){
           if (i.hp == 0){
