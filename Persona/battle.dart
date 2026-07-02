@@ -30,6 +30,7 @@ void main(){
      4, 1
   );
 
+  loop:
   while (true){
     List<List<String>> map = Castle.getMap();
     int x = Castle.getAbscissa();
@@ -92,20 +93,10 @@ void main(){
 
           Map<String, Persona> character = {};
 
-          switch (effect[move]!['Type']){
-            case 0:
-            case 1:
-            case 6:
-            case 7:
-            case 8:
-              character = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
-              break;
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-              character = Map.fromEntries(party.entries.where((character) => character.value.hp > 0));
-              break;
+          if (offensive.contains(effect[move]!['Type'])){
+            character = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
+          } else {
+            character = Map.fromEntries(party.entries.where((character) => character.value.hp > 0));
           };
           stdout.write('Target ${character.keys}: ');
           String target = stdin.readLineSync()!;
@@ -116,6 +107,14 @@ void main(){
           print(i.skill(character[target]!, move));
           print(character[target]!.info());
           if (opponents.values.every((opponent) => opponent.hp == 0)){
+            Castle.setCoordinate(Castle.getOrdinate(), Castle.getAbscissa(), 'o');
+            if (!Castle.getMap().any((coordinate) => coordinate.contains('x'))){
+              for (var i in map){
+                print(i.join(' '));
+              }
+              print('The Investigation Team won!');
+              break loop;
+            }
             break game;
           }
         }
@@ -135,36 +134,23 @@ void main(){
 
           move = i.active[Random().nextInt(i.active.length)];
           
-          switch (effect[move]!['Type']){
-            case 0:
-            case 1:
-            case 6:
-            case 7:
-            case 8:
-              target = Map.fromEntries(party.entries.where((character) => character.value.hp > 0));
-              break;
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-              target = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
-              break;
+          if (offensive.contains(effect[move]!['Type'])){
+            target = Map.fromEntries(party.entries.where((character) => character.value.hp > 0));
+          } else {
+            target = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
           }
           character = target[target.keys.toList()[Random().nextInt(target.keys.length)]]!;
           print(i.skill(character, move));
           print(character.info());
-          if (party.values.every((character) => character.hp == 0)){
-            break game;
+          if (party.values.every((character) => character.hp == 0) || party['Yu']!.hp == 0){
+            for (var i in map){
+              print(i.join(' '));
+            }
+            print('The Investigation Team was defeated!');
+            break loop;
           }
         }
       }
-    }
-
-    if (party['Yu']!.hp > 0) {
-      print('The Investigation Team won!');
-      Castle.setCoordinate(Castle.getOrdinate(), Castle.getAbscissa(), 'o');
-    } else {
-      print('The Investigation Team was defeated!');
     }
     Castle.setCoordinate(y, x, 'o');
   }

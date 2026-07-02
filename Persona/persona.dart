@@ -33,7 +33,7 @@ class Persona{
       rate = 1;
     }
     if (passive.contains('Regenerate 1')){
-      hp += maxHp*(2/100).toInt();
+      hp = min(maxHp, hp + (maxHp*(2/100)).toInt());
     }
   }
 
