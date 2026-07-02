@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'dart:io';
 import 'skills.dart';
+import 'dungeon.dart';
+import 'selection.dart';
 
 class Persona{
   String name;
@@ -85,110 +87,118 @@ class Persona{
   }
 
   String info(){
-    return ('Name: $name\nHP: $hp/$maxHp\nSP: $sp/$maxSp\nSkills: $skills');
+    return 'Name: $name, HP: $hp/$maxHp, SP: $sp/$maxSp, Attack: $attack ($attackCooldown), Defend: $defence ($defenceCooldown), Rate: $rate ($rateCooldown), Skills: $skills';
   }
 }
 
 void main(){
-  Map<String, Persona> characters = {
-    'Yu': Persona('Izanagi', 100, 100, ['Zio', 'Cleave', 'Rakukaja']),
-    'Yosuke': Persona('Jiraiya', 100, 100, ['Garu', 'Bash', 'Dia']),
-    'Chie': Persona('Tomoe', 100, 100, ['Skewer', 'Tarukaja']),
-    'Yukiko': Persona('Konohana Sakuya', 100, 100, ['Dia', 'Agi']), // Maragi, Me Patra 
-    'Kanji': Persona('Take-Mikazuchi', 100, 100, ['Zionga', 'Rakukaja']) //Mazio, Kill Rush, Regenerate 1
-  };
+  Map<String, Persona> characters = {...select()};
 
-  Map<String, Persona> opponents = {
-    '1': Persona('Shadow Jiraiya', 100, 100, ['Garu', 'Bash']),
-    '2': Persona('Shadow Tomoe', 100, 100, ['Bufu', 'Skewer']),
-    '3': Persona('Shadow Konohana Sakuya', 100, 100, ['Agi', 'Cleave']),
-  };
+  Dungeon Castle = Dungeon(
+    [['-', '-', '-', '-', '-'],
+     ['-', 'o', '.', 'x', '-'],
+     ['-', '-', '-', '.', '-'],
+     ['-', '.', 'x', '.', '-'],
+     ['-', '-', '-', '-', '-']]
+  );
 
-  game:
   while (true){
-    for (var i in characters.values){
-      if (i.hp == 0){
-        continue;
-      }
+    int status = explore(Castle);
 
-      print(i.info());
-
-      stdout.write('Skill: ');
-      String move = stdin.readLineSync()!;
-      while (!i.skills.contains(move)){
-          stdout.write('Skill: ');
-          move = stdin.readLineSync()!;
-      };
-
-      stdout.write('Target: ');
-      String target = stdin.readLineSync()!;
-      Map<String, Persona> possible = {};
-      switch (effect[move]!['Type']){
-        case 0:
-        case 1:
-        case 6:
-        case 7:
-        case 8:
-          possible = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
-          break;
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-          possible = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
-          break;
-      };
-      while (!possible.keys.contains(target)){
-        stdout.write('Target: ');
-        target = stdin.readLineSync()!;
-      }
-      i.skill(possible[target]!, move);
-      print(possible[target]!.info());
-      if (opponents.values.every((opponent) => opponent.hp == 0)){
-        break game;
-      }
-    }
-
-      for (var i in opponents.values){
+    game:
+    if (status == 1){
+        Map<String, Persona> opponents = {
+          '1': Persona('Shadow Jiraiya', 100, 100, ['Garu', 'Bash']),
+          '2': Persona('Shadow Tomoe', 100, 100, ['Bufu', 'Skewer']),
+          '3': Persona('Shadow Konohana Sakuya', 100, 100, ['Agi', 'Cleave']),
+        };
+      while (true){
+      for (var i in characters.values){
         if (i.hp == 0){
           continue;
-        }      
+        }
 
         print(i.info());
 
-        late Map<String, Persona> target;
-        late String move;
-        late Persona possible;
+        stdout.write('Skill: ');
+        String move = stdin.readLineSync()!;
+        while (!i.skills.contains(move)){
+            stdout.write('Skill: ');
+            move = stdin.readLineSync()!;
+        };
 
-        move = i.skills[Random().nextInt(i.skills.length)];
-        
+        stdout.write('Target: ');
+        String target = stdin.readLineSync()!;
+        Map<String, Persona> possible = {};
         switch (effect[move]!['Type']){
           case 0:
           case 1:
           case 6:
           case 7:
           case 8:
-            target = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
+            possible = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
             break;
           case 2:
           case 3:
           case 4:
           case 5:
-            target = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
+            possible = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
             break;
+        };
+        while (!possible.keys.contains(target)){
+          stdout.write('Target: ');
+          target = stdin.readLineSync()!;
         }
-        possible = target[target.keys.toList()[Random().nextInt(target.keys.length)]]!;
-        i.skill(possible, move);
-        print(possible.info());
-        if (characters.values.every((character) => character.hp == 0)){
+        i.skill(possible[target]!, move);
+        print(possible[target]!.info());
+        if (opponents.values.every((opponent) => opponent.hp == 0)){
           break game;
         }
       }
-  }
 
-  if (characters['Yu']!.hp > 0) {
-    print('The Investigation Team won!');
-  } else {
-    print('The Investigation Team was defeated!');
+        for (var i in opponents.values){
+          if (i.hp == 0){
+            continue;
+          }      
+
+          print(i.info());
+
+          late Map<String, Persona> target;
+          late String move;
+          late Persona possible;
+
+          move = i.skills[Random().nextInt(i.skills.length)];
+          
+          switch (effect[move]!['Type']){
+            case 0:
+            case 1:
+            case 6:
+            case 7:
+            case 8:
+              target = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
+              break;
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+              target = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
+              break;
+          }
+          possible = target[target.keys.toList()[Random().nextInt(target.keys.length)]]!;
+          i.skill(possible, move);
+          print(possible.info());
+          if (characters.values.every((character) => character.hp == 0)){
+            break game;
+          }
+        }
+      }
+    }
+
+    if (characters['Yu']!.hp > 0) {
+      print('The Investigation Team won!');
+      Castle.setCoordinate(Castle.getOrdinate(), Castle.getAbscissa(), 'o');
+    } else {
+      print('The Investigation Team was defeated!');
+    }
   }
 }
