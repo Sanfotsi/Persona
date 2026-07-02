@@ -8,7 +8,7 @@ class Dungeon{
   List<List<String>> getMap(){
     return map;
   }
-  
+
   int getAbscissa(){
     return x;
   }
@@ -29,3 +29,13 @@ class Dungeon{
     map[y][x] = symbol;
   }
 }
+
+Dungeon yukikoCastle = Dungeon(
+  [['#', '#', '#', '#', '#', '#'],
+   ['#', '.', '.', 'x', '.', '#'],
+   ['#', 'x', '.', '#', '.', '#'],
+   ['#', '#', '.', '#', '.', '#'],
+   ['#', 'o', '.', '#', 'x', '#'],
+   ['#', '#', '#', '#', '#', '#']],
+   4, 1
+);
