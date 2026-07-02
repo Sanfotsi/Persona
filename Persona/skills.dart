@@ -1,28 +1,28 @@
 const Map<String, int> light = {
-  'Power': 40,
-  'Accuracy': 98,
   'Cost': 4,
+  'Accuracy': 98,
+  'Power': 40,
   'Type': 0
 };
 
 const Map<String, int> medium = {
-  'Power': 100,
-  'Accuracy': 98,
   'Cost': 8,
+  'Accuracy': 98,
+  'Power': 100,
   'Type': 0
 };
 
 const Map<String, int> heavy = {
-  'Power': 160,
-  'Accuracy': 98,
   'Cost': 12,
+  'Accuracy': 98,
+  'Power': 160,
   'Type': 0
 };
 
 const Map<String, int> buff = {
-  'Power': 0,
-  'Accuracy': 100,
   'Cost': 12,
+  'Accuracy': 100,
+  'Power': 0,
 };
 
 const Map<String, Map<String, int>> effect = {
@@ -30,29 +30,32 @@ const Map<String, Map<String, int>> effect = {
   'Bufu': light,
   'Zio': light,
   'Garu': light,
+  'Bufula': medium,
   'Zionga': medium,
+  'Agidyne': heavy,
+  'Garudyne': heavy,
   'Bash': {
-    'Power': 60,
-    'Accuracy': 100,
     'Cost': 6,
+    'Accuracy': 100,
+    'Power': 60,
     'Type': 1
   },
   'Cleave': {
-    'Power': 65,
-    'Accuracy': 100,
     'Cost': 5,
+    'Accuracy': 100,
+    'Power': 65,
     'Type': 1
   },
   'Skewer': {
-    'Power': 70,
-    'Accuracy': 85,
     'Cost': 5,
+    'Accuracy': 85,
+    'Power': 70,
     'Type': 1
   },
   'Dia': {
-    'Power': 40,
-    'Accuracy': 100,
     'Cost': 3,
+    'Accuracy': 100,
+    'Power': 40,
     'Type': 2
   },
   'Tarukaja': {

@@ -1,156 +1,120 @@
-import 'dart:math';
 import 'dart:io';
+import 'dart:math';
+import 'persona.dart';
 import 'skills.dart';
 import 'dungeon.dart';
-import 'selection.dart';
-
-class Persona{
-  String name;
-  int maxHp;
-  int maxSp;
-  int hp;
-  int sp;
-  double attack = 1;
-  double defence = 1;
-  double rate = 1;
-  int attackCooldown = 0;
-  int defenceCooldown = 0;
-  int rateCooldown = 0;
-  List<String> skills;
-
-  Persona(this.name, this.hp, this.sp, this.skills) : maxHp = hp, maxSp = sp;
-
-  void skill(Persona target, String skill){
-    int power = effect[skill]!['Power'] as int;
-    int accuracy = effect[skill]!['Accuracy'] as int;
-    int cost = effect[skill]!['Cost'] as int;
-    int type = effect[skill]!['Type'] as int;
-
-    attackCooldown = max(0, attackCooldown - 1);
-    defenceCooldown = max(0, defenceCooldown - 1);
-    rateCooldown = max(0, rateCooldown - 1);
-
-    if (attackCooldown == 0){
-      attack = 1;
-    }
-    if (defenceCooldown == 0){
-      defence = 1;
-    }
-    if (rateCooldown == 0){
-      rate = 1;
-    }
-
-    if (type == 1){
-      hp -= (maxHp * (cost / 100)).toInt();
-    } else {
-      sp = max(0, sp - cost);
-    }
-
-    if (Random().nextInt(100) + 1 <= min(100, accuracy*(rate/target.rate))){
-      switch (type){
-        case 0:
-        case 1:
-          target.hp = max(0, (target.hp - (power*(attack/target.defence))).floor());
-          break;
-        case 2:
-          target.hp = min(target.maxHp, target.hp + power);
-          break;
-        case 3:
-          target.attack = 3/2;
-          target.attackCooldown = 3;
-          break;
-        case 4:
-          target.defence = 3/2;
-          target.defenceCooldown = 3;
-          break;
-        case 5:
-          target.rate = 3/2;
-          target.rateCooldown = 3;
-          break;
-        case 6:
-          target.attack = 2/3;
-          target.attackCooldown = 3;
-          break;
-        case 7:
-          target.defence = 2/3;
-          target.defenceCooldown = 3;
-          break;
-        case 8:
-          target.rate = 2/3;
-          target.rateCooldown = 3;
-          break;
-        }
-        print('$name casted $skill on ${target.name}');
-      } else {
-        print('$name casted $skill on ${target.name}, but it missed!');
-      }
-  }
-
-  String info(){
-    return 'Name: $name, HP: $hp/$maxHp, SP: $sp/$maxSp, Attack: $attack ($attackCooldown), Defend: $defence ($defenceCooldown), Rate: $rate ($rateCooldown), Skills: $skills';
-  }
-}
 
 void main(){
-  Map<String, Persona> characters = {...select()};
+  Map<String, Persona> party = {
+    'Yu': characters['Yu']!
+  };
+
+  while (party.length < 4){
+    print('Party: ${party.keys}');
+
+    stdout.write('Select ${characters.keys}: ');
+    String input = stdin.readLineSync()!;
+
+    if (characters.keys.contains(input)){
+      party[input] = characters[input]!;
+    }
+  }
 
   Dungeon Castle = Dungeon(
-    [['-', '-', '-', '-', '-'],
-     ['-', 'o', '.', 'x', '-'],
-     ['-', '-', '-', '.', '-'],
-     ['-', '.', 'x', '.', '-'],
-     ['-', '-', '-', '-', '-']]
+    [['#', '#', '#', '#', '#', '#'],
+     ['#', '.', '.', 'x', '.', '#'],
+     ['#', 'x', '.', '#', '.', '#'],
+     ['#', '#', '.', '#', '.', '#'],
+     ['#', 'o', '.', '#', 'x', '#'],
+     ['#', '#', '#', '#', '#', '#']],
+     4, 1
   );
 
   while (true){
-    int status = explore(Castle);
+    List<List<String>> map = Castle.getMap();
+    int x = Castle.getAbscissa();
+    int y = Castle.getOrdinate();
+
+    for (var i in map){
+      print(i.join(' '));
+    }
+
+    stdout.write('Move (w/a/s/d): ');
+    String input = stdin.readLineSync()!;
+
+    Castle.setCoordinate(y, x, '.');
+    switch (input){
+      case 'w':
+        if ((map[y - 1][x]) != '#'){
+          Castle.setOrdinate(-1);
+        }
+      case 'a':
+        if ((map[y][x - 1]) != '#'){
+          Castle.setAbscissa(-1);
+        }
+      case 's':
+        if ((map[y + 1][x]) != '#'){
+          Castle.setOrdinate(1);
+        }
+      case 'd':
+        if ((map[y][x + 1]) != '#'){
+          Castle.setAbscissa(1);
+        }
+    }
+
+    x = Castle.getAbscissa();
+    y = Castle.getOrdinate();
 
     game:
-    if (status == 1){
+    if (map[y][x] == 'x'){
         Map<String, Persona> opponents = {
-          '1': Persona('Shadow Jiraiya', 100, 100, ['Garu', 'Bash']),
-          '2': Persona('Shadow Tomoe', 100, 100, ['Bufu', 'Skewer']),
-          '3': Persona('Shadow Konohana Sakuya', 100, 100, ['Agi', 'Cleave']),
+          '1': Persona('Shadow Jiraiya', 100, 100, ['Garu', 'Bash'], []),
+          '2': Persona('Shadow Tomoe', 100, 100, ['Bufu', 'Skewer'], []),
+          '3': Persona('Shadow Konohana Sakuya', 100, 100, ['Agi', 'Cleave'], []),
         };
+
       while (true){
-      for (var i in characters.values){
+      for (var i in party.values){
         if (i.hp == 0){
           continue;
         }
 
+        i.turn();
+
         print(i.info());
 
-        stdout.write('Skill: ');
+        stdout.write('Skill ${i.active}: ');
         String move = stdin.readLineSync()!;
-        while (!i.skills.contains(move)){
+        while (!i.active.contains(move)){
             stdout.write('Skill: ');
             move = stdin.readLineSync()!;
         };
 
-        stdout.write('Target: ');
-        String target = stdin.readLineSync()!;
-        Map<String, Persona> possible = {};
+        Map<String, Persona> character = {};
+
         switch (effect[move]!['Type']){
           case 0:
           case 1:
           case 6:
           case 7:
           case 8:
-            possible = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
+            character = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
             break;
           case 2:
           case 3:
           case 4:
           case 5:
-            possible = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
+            character = Map.fromEntries(party.entries.where((character) => character.value.hp > 0));
             break;
         };
-        while (!possible.keys.contains(target)){
+        stdout.write('Target ${character.keys}: ');
+        String target = stdin.readLineSync()!;
+        while (!character.keys.contains(target)){
           stdout.write('Target: ');
           target = stdin.readLineSync()!;
         }
-        i.skill(possible[target]!, move);
-        print(possible[target]!.info());
+        print(i.skill(character[target]!, move));
+        print(character[target]!.info());
         if (opponents.values.every((opponent) => opponent.hp == 0)){
           break game;
         }
@@ -159,15 +123,17 @@ void main(){
         for (var i in opponents.values){
           if (i.hp == 0){
             continue;
-          }      
+          }
+
+          i.turn();
 
           print(i.info());
 
-          late Map<String, Persona> target;
+          late Persona character;
           late String move;
-          late Persona possible;
+          late Map<String, Persona> target;
 
-          move = i.skills[Random().nextInt(i.skills.length)];
+          move = i.active[Random().nextInt(i.active.length)];
           
           switch (effect[move]!['Type']){
             case 0:
@@ -175,7 +141,7 @@ void main(){
             case 6:
             case 7:
             case 8:
-              target = Map.fromEntries(characters.entries.where((character) => character.value.hp > 0));
+              target = Map.fromEntries(party.entries.where((character) => character.value.hp > 0));
               break;
             case 2:
             case 3:
@@ -184,21 +150,22 @@ void main(){
               target = Map.fromEntries(opponents.entries.where((opponent) => opponent.value.hp > 0));
               break;
           }
-          possible = target[target.keys.toList()[Random().nextInt(target.keys.length)]]!;
-          i.skill(possible, move);
-          print(possible.info());
-          if (characters.values.every((character) => character.hp == 0)){
+          character = target[target.keys.toList()[Random().nextInt(target.keys.length)]]!;
+          print(i.skill(character, move));
+          print(character.info());
+          if (party.values.every((character) => character.hp == 0)){
             break game;
           }
         }
       }
     }
 
-    if (characters['Yu']!.hp > 0) {
+    if (party['Yu']!.hp > 0) {
       print('The Investigation Team won!');
       Castle.setCoordinate(Castle.getOrdinate(), Castle.getAbscissa(), 'o');
     } else {
       print('The Investigation Team was defeated!');
     }
+    Castle.setCoordinate(y, x, 'o');
   }
 }
